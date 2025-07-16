@@ -1,6 +1,6 @@
 package com.komy.employees.service;
 
-import com.komy.employees.dao.EmployeeDAO;
+import com.komy.employees.dao.EmployeeRepository;
 import com.komy.employees.entity.Employee;
 import com.komy.employees.request.EmployeeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,32 +11,30 @@ import java.util.List;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public EmployeeServiceImpl(EmployeeDAO employeeDAO) {
-        this.employeeDAO = employeeDAO;
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
     public List<Employee> findAll() {
-        return employeeDAO.findAll();
+        return employeeRepository.findAll();
     }
 
     @Override
     public Employee findById(long id) {
-        var employee = employeeDAO.findById(id);
-        if (employee == null) {
-            throw new RuntimeException("Employee not found");
-        }
-        return employee;
+        var result = employeeRepository.findById(id);
+
+        return result.orElseThrow(() -> new RuntimeException("Employee not found for id - " + id));
     }
 
     @Transactional
     @Override
     public Employee save(EmployeeRequest employeeRequest) {
         Employee employee = convertToEmployee(0, employeeRequest);
-        return employeeDAO.save(employee);
+        return employeeRepository.save(employee);
     }
 
     @Override
@@ -48,12 +46,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee update(long id, EmployeeRequest employeeRequest) {
         Employee employee = convertToEmployee(id, employeeRequest);
-        return employeeDAO.save(employee);
+        return employeeRepository.save(employee);
     }
 
     @Transactional
     @Override
     public void deleteById(long id) {
-        employeeDAO.deleteById(id);
+        employeeRepository.deleteById(id);
     }
 }
